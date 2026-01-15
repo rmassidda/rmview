@@ -10,8 +10,8 @@ from twisted.internet.error import ConnectionRefusedError
 from ..rmparams import *
 from ..rfb import *
 
-IMG_FORMAT = QImage.Format_RGB16
-BYTES_PER_PIXEL = 2
+IMG_FORMAT = QImage.Format_ARGB32
+BYTES_PER_PIXEL = 4
 
 log = logging.getLogger('rmview')
 
@@ -52,11 +52,15 @@ class VncClient(RFBClient):
     self.signals.onFatalError.emit(Exception("Unsupported password request."))
 
   def commitUpdate(self, rectangles=None):
-    self.signals.onNewFrame.emit(self.img)
+    self.emitImage()
     self.framebufferUpdateRequest(incremental=1)
 
   def updateRectangle(self, x, y, width, height, data):
-    self.painter.drawImage(x,y,QImage(data, width, height, width * BYTES_PER_PIXEL, IMG_FORMAT))
+    rectangle = QImage(data, width, height, width * BYTES_PER_PIXEL, IMG_FORMAT)
+    self.painter.drawImage(x, y, rectangle)
+
+  def fillRectangle(self, x, y, width, height, color):
+    self.painter.fillRect(x, y, width, height, color)
 
   def getRMChallenge(self):
     return self.factory.challenge
