@@ -777,7 +777,7 @@ class RFBClient(Protocol):
     def framebufferUpdateRequest(self, x=0, y=0, width=None, height=None, incremental=0):
         if width  is None: width  = self.width - x
         if height is None: height = self.height - y
-        self.transport.write(pack("!BBHHHH", 3, incremental, x, y, width, height))
+        self.transport.write(pack("!BBHHHH", 3, incremental, x, y, width * 2, height))
 
     def keyEvent(self, key, down=1):
         """For most ordinary keys, the "keysym" is the same as the corresponding ASCII value.
