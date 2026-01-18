@@ -25,6 +25,8 @@ class ScreenStreamSignals(QObject):
 class VncClient(RFBClient):
   img = QImage(WIDTH, HEIGHT, IMG_FORMAT)
   painter = QPainter(img)
+  last_was_incremental = False
+  last_frame = None
 
   def __init__(self, signals):
     super(VncClient, self).__init__()
@@ -54,6 +56,18 @@ class VncClient(RFBClient):
   def commitUpdate(self, rectangles=None):
     self.emitImage()
     self.framebufferUpdateRequest(incremental=1)
+    if self.last_was_incremental:
+      x,y,width,height = self.last_frame
+      extra_pixels = min(16,max(width,height))
+      bx = max(x-extra_pixels,0)
+      by = max(y-extra_pixels,0)
+      bwidth = width + x - bx + extra_pixels
+      bheight = height + y - by + extra_pixels
+      self.framebufferUpdateRequest(x=bx,y=by,width=bwidth,height=bheight,incremental=0)
+      self.last_was_incremental = False
+    else:
+      self.framebufferUpdateRequest(incremental=1)
+      self.last_was_incremental = True
 
   def updateRectangle(self, x, y, width, height, data):
     rectangle = QImage(data, width, height, width * BYTES_PER_PIXEL, IMG_FORMAT)

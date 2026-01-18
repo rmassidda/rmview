@@ -413,6 +413,7 @@ class RFBClient(Protocol):
 
     def _handleRectangle(self, block):
         (x, y, width, height, encoding) = unpack("!HHHHi", block)
+        self.last_frame = (x,y,width,height)
         if self.rectangles:
             self.rectangles -= 1
             self.rectanglePos.append( (x, y, width, height) )
