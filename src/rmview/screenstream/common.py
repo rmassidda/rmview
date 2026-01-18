@@ -55,7 +55,6 @@ class VncClient(RFBClient):
 
   def commitUpdate(self, rectangles=None):
     self.emitImage()
-    self.framebufferUpdateRequest(incremental=1)
     if self.last_was_incremental:
       x,y,width,height = self.last_frame
       extra_pixels = min(16,max(width,height))
