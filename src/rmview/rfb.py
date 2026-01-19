@@ -676,7 +676,7 @@ class RFBClient(Protocol):
                 if palette_size == 0:
                     # Raw pixel data
                     pixel_data = data.nextPixels(pixels_in_tile)
-                    print([x, y], [tx, ty], [tw, th], [width, height], pixels_in_tile, len(data))
+                    # print([x, y], [tx, ty], [tw, th], [width, height], pixels_in_tile, len(data))
                     self.updateRectangle(x+(tx-x)//2, ty, tw // 2, th, pixel_data)
                 elif palette_size == 1:
                     # Fill tile with plain color

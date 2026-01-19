@@ -54,23 +54,24 @@ class VncClient(RFBClient):
     self.signals.onFatalError.emit(Exception("Unsupported password request."))
 
   def commitUpdate(self, rectangles=None):
-    self.emitImage()
     if self.last_was_incremental:
       x,y,width,height = self.last_frame
-      extra_pixels = min(16,max(width,height))
+      extra_pixels = min(64,max(3*width,3*height))
       bx = max(x-extra_pixels,0)
       by = max(y-extra_pixels,0)
       bwidth = width + x - bx + extra_pixels
       bheight = height + y - by + extra_pixels
-      self.framebufferUpdateRequest(x=bx,y=by,width=bwidth,height=bheight,incremental=0)
       self.last_was_incremental = False
+      self.framebufferUpdateRequest(x=bx,y=by,width=bwidth,height=bheight,incremental=0)
     else:
-      self.framebufferUpdateRequest(incremental=1)
+      self.emitImage()
       self.last_was_incremental = True
+      self.framebufferUpdateRequest(incremental=1)
 
   def updateRectangle(self, x, y, width, height, data):
-    rectangle = QImage(data, width, height, width * BYTES_PER_PIXEL, IMG_FORMAT)
-    self.painter.drawImage(x, y, rectangle)
+    if not self.last_was_incremental:
+      rectangle = QImage(data, width, height, width * BYTES_PER_PIXEL, IMG_FORMAT)
+      self.painter.drawImage(x, y, rectangle)
 
   def fillRectangle(self, x, y, width, height, color):
     self.painter.fillRect(x, y, width, height, color)
