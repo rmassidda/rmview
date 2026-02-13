@@ -413,6 +413,7 @@ class RFBClient(Protocol):
 
     def _handleRectangle(self, block):
         (x, y, width, height, encoding) = unpack("!HHHHi", block)
+        self.last_frame = (x,y,width,height)
         if self.rectangles:
             self.rectangles -= 1
             self.rectanglePos.append( (x, y, width, height) )
@@ -675,7 +676,8 @@ class RFBClient(Protocol):
                 if palette_size == 0:
                     # Raw pixel data
                     pixel_data = data.nextPixels(pixels_in_tile)
-                    self.updateRectangle(tx, ty, tw, th, pixel_data)
+                    # print([x, y], [tx, ty], [tw, th], [width, height], pixels_in_tile, len(data))
+                    self.updateRectangle(x+(tx-x)//2, ty, tw // 2, th, pixel_data)
                 elif palette_size == 1:
                     # Fill tile with plain color
                     color = data.nextPixel()
@@ -776,7 +778,7 @@ class RFBClient(Protocol):
     def framebufferUpdateRequest(self, x=0, y=0, width=None, height=None, incremental=0):
         if width  is None: width  = self.width - x
         if height is None: height = self.height - y
-        self.transport.write(pack("!BBHHHH", 3, incremental, x, y, width, height))
+        self.transport.write(pack("!BBHHHH", 3, incremental, x, y, width * 2, height))
 
     def keyEvent(self, key, down=1):
         """For most ordinary keys, the "keysym" is the same as the corresponding ASCII value.
